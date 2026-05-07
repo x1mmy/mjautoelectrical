@@ -1,916 +1,1240 @@
-import { useEffect, useState } from 'react'
-import {
-  Link,
-  Outlet,
-  Route,
-  Routes,
-  useLocation,
-} from 'react-router-dom'
+import { useEffect, useId, useRef, useState } from 'react'
 import './App.css'
 
-const MAP_EMBED =
-  'https://maps.google.com/maps?q=173+Pitt+Street+Merrylands+NSW+2160&t=&z=15&ie=UTF8&iwloc=&output=embed'
+const FAQ_ITEMS = [
+  {
+    q: 'How much does car electrical diagnostics cost?',
+    a: "Diagnostic and servicing work starts at $50. The final cost depends on the fault found and the repair required — we'll quote you before any work begins, no surprises.",
+  },
+  {
+    q: 'What car makes do you specialise in?',
+    a: "We're confident specialists on Audi, BMW, Jeep and Citroën — including ECU repairs, climate control diagnostics and electronic systems. We service every other make on the road too: Toyota, Ford, Holden, Mazda, Hyundai, Mercedes, VW and the rest.",
+  },
+  {
+    q: 'How much does a Smart Start Interlock installation cost?',
+    a: "Installation starts at $500. We'll walk you through what's involved when you call — including the cheapest monthly service rate on the market.",
+  },
+  {
+    q: 'How much does a car air-conditioning regas cost?',
+    a: "Regas starts at $165. The price varies depending on your vehicle and how much refrigerant is needed. A standard regas takes 45–60 minutes; if there's a leak or fault, diagnosis and repair will add time.",
+  },
+  {
+    q: 'How long does a Smart Start Interlock installation take?',
+    a: 'Typically 1–2 hours depending on the vehicle. Please book in advance so we can get the install slot organised properly.',
+  },
+  {
+    q: 'What makes an auto electrician different from a regular mechanic?',
+    a: "Auto electricians specialise in vehicle electrical systems — wiring, sensors, batteries, alternators and electronic modules — which most general mechanics don't diagnose in depth. We focus exclusively on electrical work, so faults get found faster and fixed correctly the first time.",
+  },
+  {
+    q: 'What are the signs my car has an electrical fault?',
+    a: "Common signs: a warning light on the dash, a car that won't start or starts intermittently, flickering lights, or a battery that keeps going flat. If any of these are happening, a $50 diagnostic check will identify the cause.",
+  },
+  {
+    q: 'Do you service all areas of Sydney?',
+    a: "We're based at 173 Pitt St in Merrylands — Western Sydney — and we see customers from across the greater Sydney region. The shop is a 2-minute walk to Merrylands station, so plenty of customers drop and run.",
+  },
+]
 
-function Layout() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const location = useLocation()
+function PhoneIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  )
+}
 
-  const hashLink = (id) =>
-    location.pathname === '/' ? `#${id}` : `/#${id}`
+function StarIcon({ dim }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" style={dim ? { opacity: 0.45 } : undefined}>
+      <path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z" />
+    </svg>
+  )
+}
 
+function GooglePinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 22s8-4.5 8-12a8 8 0 1 0-16 0c0 7.5 8 12 8 12z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  )
+}
+
+function UtilityBar() {
+  return (
+    <div className="utility">
+      <div className="wrap">
+        <div className="util-l">
+          <span className="live">
+            <span className="dot" /> Workshop open • Mon–Fri 8:00–4:30
+          </span>
+        </div>
+        <div className="util-r">
+          <span>173 Pitt St, Merrylands NSW</span>
+          <span className="phone-mini">02 9637 3605</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Header() {
+  return (
+    <header className="site-header">
+      <div className="wrap">
+        <a href="/" className="brand" aria-label="M&J Auto Electrics home">
+          <span className="brand-mark">
+            <span>M&amp;J</span>
+          </span>
+          <span className="brand-name">
+            <b>M&amp;J Auto Electrics</b>
+            <small>NSW PTY LTD · Est. 1980</small>
+          </span>
+        </a>
+        <nav className="nav" aria-label="Primary">
+          <a href="#services">Services</a>
+          <a href="#interlocks">Smart Start</a>
+          <a href="#parts">Parts</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <a href="tel:0296373605" className="cta-call">
+          <PhoneIcon />
+          <span className="cta-text">Call 02 9637 3605</span>
+        </a>
+      </div>
+    </header>
+  )
+}
+
+function Hero() {
+  return (
+    <section className="hero">
+      <div className="wrap">
+        <div className="hero-grid">
+          <div>
+            <div className="hero-eyebrow">
+              <span className="badge label">
+                <svg
+                  className="ico"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2 4 5v6c0 5 3.4 9.5 8 11 4.6-1.5 8-6 8-11V5z" />
+                </svg>
+                Family-run · 46 years
+              </span>
+              <span className="badge label">
+                <svg
+                  className="ico"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style={{ color: 'var(--signal)' }}
+                >
+                  <path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z" />
+                </svg>
+                4.2 ★ · 106 Google reviews
+              </span>
+              <span className="badge label">
+                <svg
+                  className="ico"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" />
+                </svg>
+                2 min walk to station
+              </span>
+            </div>
+
+            <h1 className="hero-title">
+              <span className="line">
+                <span>Diagnosing</span>
+              </span>
+              <span className="line">
+                <span>
+                  Sydney&apos;s <em>cars.</em>
+                </span>
+              </span>
+              <span className="line">
+                <span>Since 1980.</span>
+              </span>
+            </h1>
+
+            <p className="hero-sub">
+              The same workshop on Pitt St in Merrylands. Three generations of drivers. SRS &amp; ABS faults,
+              electrical gremlins, air-con regas, Smart Start Interlock fitments — all done by qualified auto
+              electricians, not general mechanics.
+            </p>
+
+            <div className="hero-actions">
+              <a href="#contact" className="btn btn--primary">
+                Book a diagnostic
+                <svg
+                  className="arr"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </a>
+              <a href="tel:0296373605" className="btn btn--ghost">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+                02 9637 3605
+              </a>
+            </div>
+          </div>
+
+          <aside className="readout" data-reveal>
+            <div className="readout-head">
+              <span>
+                <span className="live-dot" />
+                G-SCAN 2 · Live readout
+              </span>
+              <span>VIN ··· 47KM</span>
+            </div>
+            <div className="readout-row">
+              <span className="k">Module</span>
+              <span className="v">SRS / ABS</span>
+            </div>
+            <div className="readout-row">
+              <span className="k">DTC Status</span>
+              <span className="v ok">
+                Cleared ✓
+              </span>
+            </div>
+            <div className="readout-row">
+              <span className="k">Battery health</span>
+              <span className="v ok">
+                12.6 V · OK
+              </span>
+            </div>
+            <div className="readout-row">
+              <span className="k">A/C charge</span>
+              <span className="v amber">Regas advised</span>
+            </div>
+            <div className="readout-row">
+              <span className="k">Quote</span>
+              <span className="v">From $50</span>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function MarqueeSection() {
+  return (
+    <div className="marquee" aria-hidden="true">
+      <div className="marquee-track">
+        <span>
+          <span className="hi">SRS Diagnostics</span>
+          <span className="star">✻</span> <span>ABS Faults</span>
+          <span className="star">✻</span> <span className="hi">Smart Start Interlocks</span>
+          <span className="star">✻</span> <span>Air-Con Regas</span>
+          <span className="star">✻</span> <span className="hi">Battery &amp; Alternator</span>
+          <span className="star">✻</span> <span>4WD Lighting</span>
+          <span className="star">✻</span>
+        </span>
+        <span>
+          <span className="hi">SRS Diagnostics</span>
+          <span className="star">✻</span> <span>ABS Faults</span>
+          <span className="star">✻</span> <span className="hi">Smart Start Interlocks</span>
+          <span className="star">✻</span> <span>Air-Con Regas</span>
+          <span className="star">✻</span> <span className="hi">Battery &amp; Alternator</span>
+          <span className="star">✻</span> <span>4WD Lighting</span>
+          <span className="star">✻</span>
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function Stats() {
+  return (
+    <section className="stats">
+      <div className="wrap">
+        <div className="stats-grid">
+          <div className="stat" data-reveal>
+            <div className="num tnum">
+              <span data-count="46">0</span>
+            </div>
+            <div className="lbl">Years on Pitt St · Est. 1980</div>
+          </div>
+          <div className="stat" data-reveal>
+            <div className="num tnum">
+              $<span data-count="50">0</span>
+            </div>
+            <div className="lbl">Diagnostic from</div>
+          </div>
+          <div className="stat" data-reveal>
+            <div className="num tnum">
+              <span data-count="2">0</span>
+              <em>·</em>min
+            </div>
+            <div className="lbl">Walk to Merrylands Stn.</div>
+          </div>
+          <div className="stat" data-reveal>
+            <div className="num tnum">
+              4<em>·</em>2<em>★</em>
+            </div>
+            <div className="lbl">From 106 Google reviews</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17 17 7M9 7h8v8" />
+    </svg>
+  )
+}
+
+function Services() {
+  return (
+    <section id="services" className="services section-pad">
+      <div className="wrap">
+        <div className="section-head">
+          <div>
+            <div className="section-num">/01 — Services</div>
+            <h2>
+              What we
+              <br />
+              actually <em>fix.</em>
+            </h2>
+          </div>
+          <p>
+            We&apos;re auto <em>electricians</em> — specialised in vehicle electrical systems: wiring, sensors,
+            modules, alternators, batteries, ECUs. The stuff most general mechanics won&apos;t touch in depth.
+            Confident specialists on <b>Audi, BMW, Jeep and Citroën</b> — at home with everything else on the road.
+          </p>
+        </div>
+
+        <div className="svc-grid">
+          <article className="svc" data-reveal>
+            <div className="svc-head">
+              <div className="svc-num">/01</div>
+              <div className="svc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12h3l2-8 4 16 2-8h7" />
+                </svg>
+              </div>
+            </div>
+            <div>
+              <h3 className="svc-title">
+                SRS &amp;
+                <br />
+                ABS Diagnostics
+              </h3>
+              <p className="svc-desc">
+                Latest G-Scan 2 equipment reads SRS, ABS and on-board control modules across every modern make.
+              </p>
+            </div>
+            <div className="svc-foot">
+              <span className="price">From $50</span>
+              <span className="arr">
+                <ArrowIcon />
+              </span>
+            </div>
+          </article>
+
+          <article className="svc" data-reveal>
+            <div className="svc-head">
+              <div className="svc-num">/02</div>
+              <div className="svc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 12h4M18 12h4M12 2v4M12 18v4M5 5l3 3M16 16l3 3M5 19l3-3M16 8l3-3" />
+                  <circle cx="12" cy="12" r="4" />
+                </svg>
+              </div>
+            </div>
+            <div>
+              <h3 className="svc-title">
+                Air-Con
+                <br />
+                Regas &amp; Service
+              </h3>
+              <p className="svc-desc">
+                Lost cool? Full regas, leak detection and component repair. Standard regas takes 45–60 minutes.
+              </p>
+            </div>
+            <div className="svc-foot">
+              <span className="price">From $165</span>
+              <span className="arr">
+                <ArrowIcon />
+              </span>
+            </div>
+          </article>
+
+          <article className="svc" data-reveal>
+            <div className="svc-head">
+              <div className="svc-num">/03</div>
+              <div className="svc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="7" width="16" height="10" rx="2" />
+                  <path d="M22 11v2" />
+                  <path d="M6 11v2M10 11v2" />
+                </svg>
+              </div>
+            </div>
+            <div>
+              <h3 className="svc-title">
+                Battery,
+                <br />
+                Alt &amp; Starter
+              </h3>
+              <p className="svc-desc">
+                Won&apos;t start? Flat battery? We test, repair, recondition and rebuild starters and alternators
+                in-house.
+              </p>
+            </div>
+            <div className="svc-foot">
+              <span className="price">Quote on call</span>
+              <span className="arr">
+                <ArrowIcon />
+              </span>
+            </div>
+          </article>
+
+          <article className="svc" data-reveal>
+            <div className="svc-head">
+              <div className="svc-num">/04</div>
+              <div className="svc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2" />
+                </svg>
+              </div>
+            </div>
+            <div>
+              <h3 className="svc-title">
+                4WD Lighting
+                <br />
+                &amp; Accessories
+              </h3>
+              <p className="svc-desc">
+                Driving lights, light bars, dual battery, isolators, UHF — installed properly, wired neatly, every time.
+              </p>
+            </div>
+            <div className="svc-foot">
+              <span className="price">Quote on call</span>
+              <span className="arr">
+                <ArrowIcon />
+              </span>
+            </div>
+          </article>
+        </div>
+
+        <div className="also-do" data-reveal>
+          <span className="lead">We also do</span>
+          <span className="tag">ECU Repairs</span>
+          <span className="tag">Log Book Servicing</span>
+          <span className="tag">Reversing Cameras &amp; Sensors</span>
+          <span className="tag">Car Security</span>
+          <span className="tag">Wiring Repairs</span>
+          <span className="tag">Climate Control Diagnostics</span>
+          <span className="tag">Solar Panels</span>
+          <span className="tag">Charging Systems</span>
+          <span className="tag">Commercial Vehicles</span>
+          <span className="tag">Vehicle Breakdowns</span>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function TickIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  )
+}
+
+function Interlocks() {
+  return (
+    <section id="interlocks" className="interlocks section-pad">
+      <div className="wrap">
+        <div className="intl-grid">
+          <div className="intl-vis" data-reveal aria-hidden="true">
+            <div className="signal-stack">
+              <div className="lamp red" />
+              <div className="lamp amber" />
+              <div className="lamp green" />
+            </div>
+            <div className="intl-vis-cap">
+              <b>Smart Start Interlocks</b>
+              <br />
+              Authorised NSW agent
+            </div>
+          </div>
+          <div className="intl-body" data-reveal>
+            <div className="section-num">/02 — Smart Start Interlocks</div>
+            <h2>
+              Separating <em>drinking</em>
+              <br />
+              from driving.
+            </h2>
+            <p>
+              Court-ordered an Interlock device? We&apos;re an authorised Smart Start NSW agent and proudly distribute
+              Smart Start Interlocks Australia, the franchisee of Smart Start Inc — North America&apos;s leader in
+              alcohol ignition interlock devices. Installation in 1–2 hours, fully compliant with the NSW alcohol
+              interlock program.
+            </p>
+
+            <ul className="intl-list">
+              <li>
+                <span className="tick">
+                  <TickIcon />
+                </span>{' '}
+                Professionally installed without damage to the vehicle
+              </li>
+              <li>
+                <span className="tick">
+                  <TickIcon />
+                </span>{' '}
+                Fully qualified specialist auto electricians on every job
+              </li>
+              <li>
+                <span className="tick">
+                  <TickIcon />
+                </span>{' '}
+                Cheapest monthly service on the market
+              </li>
+              <li>
+                <span className="tick">
+                  <TickIcon />
+                </span>{' '}
+                Discreet design — minimal delay and fuss
+              </li>
+              <li>
+                <span className="tick">
+                  <TickIcon />
+                </span>{' '}
+                Best advice over the phone, 24 hours, 7 days a week
+              </li>
+            </ul>
+
+            <div className="hero-actions" style={{ marginTop: '36px' }}>
+              <a href="tel:0296373605" className="btn btn--primary">
+                Book installation · From $500
+                <svg
+                  className="arr"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </a>
+              <a href="#faq" className="btn btn--ghost">
+                Read the FAQ
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function PartnerSet() {
+  return (
+    <>
+      <div className="partner partner-smartstart">
+        <div className="ss-light">
+          <i className="r" />
+          <i className="y" />
+          <i className="g" />
+        </div>
+        <div className="ss-text">
+          Smart
+          <br />
+          Start
+          <br />
+          <small>Authorised</small>
+        </div>
+      </div>
+      <div className="partner">
+        <div className="partner-philips">
+          Philips<small>Lighting</small>
+        </div>
+      </div>
+      <div className="partner">
+        <div className="partner-redarc">
+          <div className="name">REDARC</div>
+          <small>Power Conversion</small>
+        </div>
+      </div>
+      <div className="partner partner-mta">
+        <div className="mta-shield">MTA</div>
+        <div className="mta-text">
+          NSW
+          <br />
+          Member
+        </div>
+      </div>
+    </>
+  )
+}
+
+function Partners() {
+  return (
+    <section className="partners">
+      <div className="wrap">
+        <div className="partners-head" data-reveal>
+          <span className="label label--red">/03 — Trusted by the brands we install</span>
+          <h3>Authorised partners</h3>
+        </div>
+      </div>
+      <div className="partner-track-wrap">
+        <div className="partner-track">
+          {[0, 1, 2].map((i) => (
+            <PartnerSet key={i} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Testimonials() {
+  return (
+    <section className="testimonials section-pad">
+      <div className="wrap">
+        <div className="t-grid">
+          <div className="t-aside" data-reveal>
+            <div className="section-num">/04 — What Sydney drivers say</div>
+            <h2>
+              Earned over
+              <br />
+              <em>106</em> reviews.
+            </h2>
+
+            <div className="rating-row">
+              <span className="rating-big tnum">
+                4<em>·</em>2
+              </span>
+              <div>
+                <div className="stars">
+                  <StarIcon />
+                  <StarIcon />
+                  <StarIcon />
+                  <StarIcon />
+                  <StarIcon dim />
+                </div>
+                <div className="rating-meta" style={{ marginTop: '8px' }}>
+                  <b>4.2 / 5</b> · Google Reviews
+                </div>
+              </div>
+            </div>
+            <p style={{ color: 'var(--bone-2)', marginTop: '24px', lineHeight: 1.7, maxWidth: '380px' }}>
+              The reviews keep saying the same thing — honest workshop, finds the actual fault, doesn&apos;t guess.
+              Forty-six years in the same spot tends to do that.
+            </p>
+          </div>
+
+          <div className="t-cards">
+            <article className="t-card" data-reveal>
+              <span className="quote-mark">&quot;</span>
+              <div className="stars-mini">
+                <StarIcon />
+                <StarIcon />
+                <StarIcon />
+                <StarIcon />
+                <StarIcon />
+              </div>
+              <blockquote>
+                Pulled the alternator down to confirm the actual fault — no guessing — then sorted the fuel leak the
+                same trip. Couldn&apos;t recommend them more.
+              </blockquote>
+              <div className="by">
+                <b>— Verified customer</b>
+                <span className="src">
+                  <GooglePinIcon />
+                  Google
+                </span>
+              </div>
+            </article>
+
+            <article className="t-card" data-reveal>
+              <span className="quote-mark">&quot;</span>
+              <div className="stars-mini">
+                <StarIcon />
+                <StarIcon />
+                <StarIcon />
+                <StarIcon />
+                <StarIcon />
+              </div>
+              <blockquote>
+                Honest, hard-working owner — and the team match him. That&apos;s the kind of workshop you stick with.
+              </blockquote>
+              <div className="by">
+                <b>— Verified customer</b>
+                <span className="src">
+                  <GooglePinIcon />
+                  Google
+                </span>
+              </div>
+            </article>
+
+            <article className="t-card" data-reveal>
+              <span className="quote-mark">&quot;</span>
+              <div className="stars-mini">
+                <StarIcon />
+                <StarIcon />
+                <StarIcon />
+                <StarIcon />
+                <StarIcon />
+              </div>
+              <blockquote>
+                Great people. Great service. We&apos;ve been bringing the family cars here for years and won&apos;t go
+                anywhere else.
+              </blockquote>
+              <div className="by">
+                <b>— Verified customer</b>
+                <span className="src">
+                  <GooglePinIcon />
+                  Google
+                </span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Parts() {
+  return (
+    <section id="parts" className="parts section-pad">
+      <div className="wrap">
+        <div className="section-head">
+          <div>
+            <div className="section-num">/05 — Parts &amp; Accessories</div>
+            <h2>
+              Off the shelf
+              <br />
+              or <em>fitted on site.</em>
+            </h2>
+          </div>
+          <p>
+            Walk-in or call ahead. We stock and supply the gear we trust to fit on customer vehicles every day — no
+            internet specials with mystery warranties.
+          </p>
+        </div>
+
+        <div className="parts-grid">
+          <article className="part" data-reveal>
+            <div className="part-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="7" width="16" height="10" rx="2" />
+                <path d="M22 11v2" />
+                <path d="M6 11v2M10 11v2" />
+              </svg>
+            </div>
+            <h4>
+              Car
+              <br />
+              Batteries
+            </h4>
+            <div className="part-meta">Test · Supply · Fit</div>
+          </article>
+          <article className="part" data-reveal>
+            <div className="part-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12h18M3 12a9 9 0 0 1 18 0M3 12a9 9 0 0 0 18 0" />
+                <circle cx="12" cy="12" r="9" />
+              </svg>
+            </div>
+            <h4>
+              Car
+              <br />
+              Accessories
+            </h4>
+            <div className="part-meta">Genuine &amp; aftermarket</div>
+          </article>
+          <article className="part" data-reveal>
+            <div className="part-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 17h2l1-3h12l1 3h2" />
+                <circle cx="7" cy="17" r="2" />
+                <circle cx="17" cy="17" r="2" />
+                <path d="M5 11V7h14v4" />
+              </svg>
+            </div>
+            <h4>
+              4WD
+              <br />
+              Equipment
+            </h4>
+            <div className="part-meta">REDARC · Dual battery</div>
+          </article>
+          <article className="part" data-reveal>
+            <div className="part-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21h6M12 17v4M7 4h10v9a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3z" />
+              </svg>
+            </div>
+            <h4>
+              Driving
+              <br />
+              Lighting
+            </h4>
+            <div className="part-meta">Philips · LED upgrades</div>
+          </article>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function FaqPlusIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  )
+}
+
+function Faq() {
+  const [openIndex, setOpenIndex] = useState(0)
+
+  const toggle = (i) => {
+    setOpenIndex((prev) => (prev === i ? null : i))
+  }
+
+  return (
+    <section id="faq" className="faq section-pad">
+      <div className="wrap">
+        <div className="faq-grid">
+          <div className="faq-aside" data-reveal>
+            <div className="section-num">/06 — Frequently asked</div>
+            <h2>
+              Real questions
+              <br />
+              <em>from real</em> drivers.
+            </h2>
+            <p>
+              Everything we get asked over the phone, written out plain. Still stuck? Give us a ring — best advice over
+              the phone, 7 days.
+            </p>
+
+            <div className="ph-card">
+              <span className="label">Talk to a real auto sparky</span>
+              <a className="phn" href="tel:0296373605">
+                02 9637 3605
+              </a>
+            </div>
+          </div>
+
+          <div className="faq-list">
+            {FAQ_ITEMS.map((item, i) => (
+              <div key={item.q} className={`faq-item${openIndex === i ? ' open' : ''}`}>
+                <button type="button" className="faq-q" aria-expanded={openIndex === i} onClick={() => toggle(i)}>
+                  {item.q}
+                  <span className="plus">
+                    <FaqPlusIcon />
+                  </span>
+                </button>
+                <div className="faq-a">{item.a}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function MiniMap() {
+  const uid = useId()
+  const streetsId = `${uid}-streets`
+  const streets2Id = `${uid}-streets2`
+  return (
+    <div className="mini-map" aria-hidden="true">
+      <svg viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <pattern id={streetsId} width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M0 20 H40 M20 0 V40" stroke="#1c1c1c" strokeWidth="1" />
+          </pattern>
+          <pattern id={streets2Id} width="80" height="80" patternUnits="userSpaceOnUse">
+            <path d="M-10 50 L90 50 M40 -10 L40 90" stroke="#252525" strokeWidth="2" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="#0d0d0d" />
+        <rect width="100%" height="100%" fill={`url(#${streetsId})`} />
+        <rect width="100%" height="100%" fill={`url(#${streets2Id})`} />
+        <path d="M0 110 Q100 100 200 115 T400 130" stroke="#3a3a3a" strokeWidth="3" fill="none" opacity=".7" />
+        <path d="M180 0 L210 220" stroke="#e8362f" strokeWidth="2" strokeDasharray="4 6" opacity=".4" />
+        <text x="14" y="28" fill="#3a3a3a" fontFamily="JetBrains Mono" fontSize="9" letterSpacing="2">
+          PARRAMATTA RD
+        </text>
+        <text x="14" y="200" fill="#3a3a3a" fontFamily="JetBrains Mono" fontSize="9" letterSpacing="2">
+          M4 MOTORWAY
+        </text>
+        <text x="225" y="80" fill="#3a3a3a" fontFamily="JetBrains Mono" fontSize="9" letterSpacing="2">
+          PITT ST
+        </text>
+      </svg>
+      <div className="map-pin">
+        <svg className="pin-svg" viewBox="0 0 24 30" fill="none">
+          <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 18 12 18s12-9 12-18c0-6.6-5.4-12-12-12z" fill="#e8362f" />
+          <circle cx="12" cy="12" r="4" fill="#fff" />
+        </svg>
+        <span className="pin-pulse" />
+      </div>
+      <div className="mini-map-cap">
+        <b>M&amp;J Auto Electrics</b>
+        <br />
+        173 Pitt St · Merrylands NSW
+      </div>
+    </div>
+  )
+}
+
+function Contact() {
+  const formRef = useRef(null)
+  const [submitState, setSubmitState] = useState('idle')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setSubmitState('sending')
+    window.setTimeout(() => {
+      setSubmitState('sent')
+      window.setTimeout(() => {
+        setSubmitState('idle')
+        formRef.current?.reset()
+      }, 2400)
+    }, 600)
+  }
+
+  return (
+    <section id="contact" className="contact section-pad">
+      <div className="wrap">
+        <div className="contact-grid">
+          <div className="contact-info" data-reveal>
+            <div className="section-num">/07 — Find us / Talk to us</div>
+            <h2>
+              Drop in.
+              <br />
+              Drop &amp; <em>run.</em>
+            </h2>
+            <p>
+              Two minutes from Merrylands station, the shopping centre and the bus interchange. Leave the car with us in
+              the morning — pick it up after lunch, sorted.
+            </p>
+
+            <div className="info-blocks">
+              <div className="info-card">
+                <span className="label">Workshop</span>
+                <a
+                  className="v"
+                  href="https://maps.google.com/?q=173+Pitt+St+Merrylands+NSW"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  173 Pitt St,
+                  <br />
+                  Merrylands NSW 2160
+                  <small>Open in Google Maps →</small>
+                </a>
+              </div>
+              <div className="info-card">
+                <span className="label">Phone</span>
+                <a className="v" href="tel:0296373605">
+                  02 9637 3605
+                  <small>Mon–Fri · 8:00–4:30</small>
+                </a>
+              </div>
+              <div className="info-card">
+                <span className="label">Email</span>
+                <a className="v" href="mailto:service@mjautoelectrics.com.au">
+                  service@
+                  <br />
+                  mjautoelectrics.com.au
+                  <small>Reply within 1 business day</small>
+                </a>
+              </div>
+              <div className="info-card">
+                <span className="label">Booking</span>
+                <a className="v" href="tel:0296373605">
+                  Call to book
+                  <small>Walk-ins welcome</small>
+                </a>
+              </div>
+            </div>
+
+            <MiniMap />
+          </div>
+
+          <div className="form-card" data-reveal>
+            <div className="form-head">
+              <h3>
+                Quote me
+                <br />
+                before you start.
+              </h3>
+              <span className="form-num">/07.01</span>
+            </div>
+
+            <form id="enquiry" ref={formRef} onSubmit={handleSubmit}>
+              <div className="form-row">
+                <div className="field">
+                  <label htmlFor="name">Your name</label>
+                  <input id="name" name="name" type="text" placeholder="John Smith" required />
+                </div>
+                <div className="field">
+                  <label htmlFor="phone">Phone</label>
+                  <input id="phone" name="phone" type="tel" placeholder="0400 000 000" required />
+                </div>
+              </div>
+              <div className="field">
+                <label htmlFor="email">Email</label>
+                <input id="email" name="email" type="email" placeholder="you@email.com" required />
+              </div>
+              <div className="form-row">
+                <div className="field">
+                  <label htmlFor="vehicle">Vehicle</label>
+                  <input id="vehicle" name="vehicle" type="text" placeholder="2018 Toyota Hilux" />
+                </div>
+                <div className="field">
+                  <label htmlFor="service">Service required</label>
+                  <select id="service" name="service" defaultValue="Diagnostic ($50)">
+                    <option>Diagnostic ($50)</option>
+                    <option>Air-con regas ($165)</option>
+                    <option>Smart Start Interlock ($500)</option>
+                    <option>Battery / starter / alternator</option>
+                    <option>4WD lighting / dual battery</option>
+                    <option>Other / not sure</option>
+                  </select>
+                </div>
+              </div>
+              <div className="field">
+                <label htmlFor="msg">Tell us what&apos;s going on</label>
+                <textarea
+                  id="msg"
+                  name="msg"
+                  placeholder="Check engine light came on yesterday, A/C also blowing warm…"
+                />
+              </div>
+              <button
+                type="submit"
+                className="submit"
+                style={submitState === 'sent' ? { background: '#1c9a4a' } : undefined}
+              >
+                {submitState === 'sending' && 'Sending…'}
+                {submitState === 'sent' && "✓ Sent — we'll be in touch"}
+                {submitState === 'idle' && (
+                  <>
+                    Send enquiry
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Footer() {
+  return (
+    <footer>
+      <div className="wrap">
+        <div className="foot-grid">
+          <div className="foot-col foot-brand">
+            <a href="/" className="brand">
+              <span className="brand-mark">
+                <span>M&amp;J</span>
+              </span>
+              <span className="brand-name">
+                <b>M&amp;J Auto Electrics</b>
+                <small>NSW PTY LTD · Est. 1980</small>
+              </span>
+            </a>
+            <p>
+              Family-run auto electrician on Pitt St in Merrylands. Three generations of Sydney drivers, 4.2★ across
+              106 Google reviews, one workshop, and a full set of modern diagnostic tools. Proud MTA NSW member.
+            </p>
+          </div>
+          <div className="foot-col">
+            <h5>Services</h5>
+            <a href="#services">SRS &amp; ABS Diagnostics</a>
+            <a href="#services">ECU Repairs</a>
+            <a href="#services">Air-con Regas</a>
+            <a href="#services">Battery / Starter / Alt</a>
+            <a href="#services">4WD &amp; Driving Lights</a>
+            <a href="#services">Reversing Cameras</a>
+            <a href="#services">Log Book Servicing</a>
+            <a href="#interlocks">Smart Start Interlocks</a>
+          </div>
+          <div className="foot-col">
+            <h5>Visit</h5>
+            <a href="https://maps.google.com/?q=173+Pitt+St+Merrylands+NSW" target="_blank" rel="noopener noreferrer">
+              173 Pitt St, Merrylands NSW 2160
+            </a>
+            <span style={{ display: 'block', color: 'var(--bone-2)', fontSize: '14px', padding: '6px 0' }}>
+              Mon–Fri · 8:00am – 4:30pm
+            </span>
+            <span style={{ display: 'block', color: 'var(--bone-2)', fontSize: '14px', padding: '6px 0' }}>
+              Sat &amp; Sun · Closed
+            </span>
+          </div>
+          <div className="foot-col">
+            <h5>Contact</h5>
+            <a href="tel:0296373605">02 9637 3605</a>
+            <a href="mailto:service@mjautoelectrics.com.au">service@mjautoelectrics.com.au</a>
+            <a href="#contact">Send an enquiry →</a>
+          </div>
+        </div>
+        <div className="foot-bottom">
+          <span>© 1980–2026 · M&amp;J Auto Electrics NSW Pty Ltd</span>
+          <span>Mockup design preview · Site by your-name-here</span>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+function StickyCall() {
+  return (
+    <a href="tel:0296373605" className="sticky-call">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+      </svg>
+      Call · 02 9637 3605
+    </a>
+  )
+}
+
+export default function App() {
   useEffect(() => {
     const io = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('in')
-            io.unobserve(entry.target)
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('in')
+            io.unobserve(e.target)
           }
         })
       },
-      { threshold: 0.12, rootMargin: '0px 0px -50px 0px' },
+      { threshold: 0.12, rootMargin: '0px 0px -60px 0px' },
     )
-    document.querySelectorAll('.reveal').forEach((el) => io.observe(el))
+    document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el))
 
-    const counters = document.querySelectorAll('[data-count]')
-    const counterIO = new IntersectionObserver(
+    const cIO = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return
-          const el = entry.target
-          const target = Number.parseInt(el.dataset.count ?? '0', 10)
-          const duration = 1400
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return
+          const el = e.target
+          const target = parseInt(el.dataset.count, 10)
+          const dur = 1400
           const start = performance.now()
-          const startVal = 0
           const tick = (now) => {
-            const t = Math.min(1, (now - start) / duration)
+            const t = Math.min(1, (now - start) / dur)
             const eased = 1 - (1 - t) ** 3
-            el.textContent = Math.round(startVal + (target - startVal) * eased)
+            el.textContent = Math.floor(eased * target).toString()
             if (t < 1) requestAnimationFrame(tick)
+            else el.textContent = target.toString()
           }
           requestAnimationFrame(tick)
-          counterIO.unobserve(el)
+          cIO.unobserve(el)
         })
       },
       { threshold: 0.5 },
     )
-    counters.forEach((c) => counterIO.observe(c))
-
-    const nav = document.querySelector('.nav')
-    const onScroll = () => {
-      if (!nav) return
-      nav.classList.toggle('scrolled', window.scrollY > 80)
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
-
-    const onResize = () => {
-      if (window.innerWidth > 980) setMenuOpen(false)
-    }
-    window.addEventListener('resize', onResize)
+    document.querySelectorAll('[data-count]').forEach((c) => cIO.observe(c))
 
     return () => {
       io.disconnect()
-      counterIO.disconnect()
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onResize)
+      cIO.disconnect()
     }
-  }, [location.pathname])
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' })
-    const id = requestAnimationFrame(() => setMenuOpen(false))
-    return () => cancelAnimationFrame(id)
-  }, [location.pathname])
-
-  const closeMenu = () => setMenuOpen(false)
+  }, [])
 
   return (
     <>
-      <div className="utility">
-        <div className="wrap utility-inner">
-          <div className="utility-l">
-            <span className="live">Open · Mon–Fri · 8:00–4:30</span>
-            <span>173 Pitt St, Merrylands NSW 2160</span>
-          </div>
-          <div className="utility-r">
-            <a href="mailto:service@mjautoelectrics.com.au">service@mjautoelectrics.com.au</a>
-            <a href="tel:0296373605" className="tel">
-              (02) 9637 3605
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <nav className="nav">
-        <div className="wrap nav-inner">
-          <Link to="/" className="logo" onClick={closeMenu}>
-            <span className="logo-mark">M&J</span>
-            <span className="logo-text">
-              <span>Auto Electrics</span>
-              <small>Est. 1980 · Merrylands NSW</small>
-            </span>
-          </Link>
-          <ul
-            className={`nav-links${menuOpen ? ' nav-links--panel-open' : ''}`}
-          >
-            <li>
-              <a href={hashLink('services')} onClick={closeMenu}>
-                Services
-              </a>
-            </li>
-            <li>
-              <a href={hashLink('diagnostics')} onClick={closeMenu}>
-                Diagnostics
-              </a>
-            </li>
-            <li>
-              <a href={hashLink('interlocks')} onClick={closeMenu}>
-                Smart Start
-              </a>
-            </li>
-            <li>
-              <a href={hashLink('parts')} onClick={closeMenu}>
-                Parts
-              </a>
-            </li>
-            <li>
-              <a href={hashLink('faq')} onClick={closeMenu}>
-                FAQ
-              </a>
-            </li>
-            <li>
-              <a href={hashLink('contact')} onClick={closeMenu}>
-                Contact
-              </a>
-            </li>
-          </ul>
-          <a href="tel:0296373605" className="nav-cta">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
-            <span>Call</span>
-            <span>(02) 9637 3605</span>
-          </a>
-          <button
-            type="button"
-            className={`nav-toggle${menuOpen ? ' nav-toggle--open' : ''}`}
-            aria-label="Menu"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((o) => !o)}
-          >
-            <span />
-          </button>
-        </div>
-      </nav>
-
-      <Outlet />
-
-      <footer>
-        <div className="wrap">
-          <div className="footer-map-wrap">
-            <iframe
-              title="M&J Auto Electrics location map"
-              src={MAP_EMBED}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </div>
-          <div className="footer-grid">
-            <div className="footer-brand">
-              <h5>M&amp;J Auto Electrics</h5>
-              <p>
-                Family-run auto electrical specialists serving Sydney since 1980. Authorised Smart
-                Start Interlock agent and Philips Lighting partner.
-              </p>
-            </div>
-            <div className="footer-col">
-              <h6>Services</h6>
-              <ul>
-                <li>
-                  <Link to="/services/auto-electrics">Auto Electrics</Link>
-                </li>
-                <li>
-                  <a href={hashLink('diagnostics')}>Diagnostics</a>
-                </li>
-                <li>
-                  <a href={hashLink('interlocks')}>Smart Start</a>
-                </li>
-                <li>
-                  <a href={hashLink('services')}>Air Conditioning</a>
-                </li>
-              </ul>
-            </div>
-            <div className="footer-col">
-              <h6>Parts</h6>
-              <ul>
-                <li>
-                  <a href={hashLink('parts')}>Car Battery</a>
-                </li>
-                <li>
-                  <a href={hashLink('parts')}>Accessories</a>
-                </li>
-                <li>
-                  <a href={hashLink('parts')}>4WD Equipment</a>
-                </li>
-                <li>
-                  <a href={hashLink('parts')}>Lighting</a>
-                </li>
-              </ul>
-            </div>
-            <div className="footer-col">
-              <h6>Visit</h6>
-              <ul>
-                <li>173 Pitt Street</li>
-                <li>Merrylands NSW 2160</li>
-                <li>
-                  <a href="tel:0296373605">(02) 9637 3605</a>
-                </li>
-                <li>Mon – Fri · 8:00–4:30</li>
-              </ul>
-            </div>
-          </div>
-          <div className="footer-bottom">
-            <span>© M&amp;J Auto Electrics NSW Pty Ltd · Est. 1980</span>
-            <span>ABN 00 000 000 000 · NSW MVRL Licensed</span>
-          </div>
-        </div>
-      </footer>
-
-      <a href="tel:0296373605" className="mobile-call">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          width="16"
-          height="16"
-        >
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-        </svg>
-        Tap to call · (02) 9637 3605
-      </a>
+      <UtilityBar />
+      <Header />
+      <Hero />
+      <MarqueeSection />
+      <Stats />
+      <Services />
+      <Interlocks />
+      <Partners />
+      <Testimonials />
+      <Parts />
+      <Faq />
+      <Contact />
+      <Footer />
+      <StickyCall />
     </>
   )
 }
-
-function HomePage({ onContactSubmit }) {
-  return (
-    <>
-<section className="hero">
-  <div className="wrap hero-grid">
-    <div>
-      <div className="eyebrow">Auto Electrical Specialists · Sydney</div>
-      <h1>
-        <span className="line"><span>Sydney&rsquo;s most</span></span>
-        <span className="line"><span><em>trusted</em> auto</span></span>
-        <span className="line"><span>electrical garage.</span></span>
-      </h1>
-      <p className="hero-sub">
-        Family-run since 1980. Diagnostics, Smart Start Interlocks, air conditioning, 4WD electrical — all done right the first time, two minutes from Merrylands station.
-      </p>
-      <div className="hero-ctas">
-        <a href="#contact" className="btn btn-primary">
-          Book a Service
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-        <a href="tel:0296373605" className="btn btn-ghost">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          (02) 9637 3605
-        </a>
-      </div>
-    </div>
-
-    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
-      <div className="hero-visual">
-        <img src="https://images.unsplash.com/photo-1486754735734-325b5831c3ad?w=1200&q=80" alt="Auto electrical workshop" />
-        <span className="hero-visual-tag"><span className="dot"></span>Latest G-Scan 2 Diagnostics</span>
-      </div>
-      <div className="hero-meta">
-        <div className="hero-meta-block">
-          <div className="label">Diagnostics from</div>
-          <div className="val">$50<span style={{ fontSize: "0.5em", color: "var(--c-mute)", marginLeft: "0.4rem" }}>incl. fault scan</span></div>
-          <div className="desc">No-obligation quote before any work begins.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div className="scroll-cue">Scroll</div>
-</section>
-
-
-<div className="ticker">
-  <div className="ticker-track">
-    <span>Auto Electrics</span>
-    <span>SRS &amp; ABS Diagnostics</span>
-    <span>Smart Start Interlocks</span>
-    <span>Air Conditioning Re-gas</span>
-    <span>Battery Replacement</span>
-    <span>4WD Electrical</span>
-    <span>Starter Motors &amp; Alternators</span>
-    <span>Auto Electrics</span>
-    <span>SRS &amp; ABS Diagnostics</span>
-    <span>Smart Start Interlocks</span>
-    <span>Air Conditioning Re-gas</span>
-    <span>Battery Replacement</span>
-    <span>4WD Electrical</span>
-    <span>Starter Motors &amp; Alternators</span>
-  </div>
-</div>
-
-
-<section className="stats">
-  <div className="wrap stats-grid">
-    <div className="stat reveal">
-      <div className="num"><span data-count="46">46</span><sup>YRS</sup></div>
-      <div className="lbl">Servicing Sydney since 1980 — three generations of expertise.</div>
-    </div>
-    <div className="stat reveal">
-      <div className="num"><span data-count="2">2</span><sup>MIN</sup></div>
-      <div className="lbl">Walk from Merrylands station, shopping &amp; transport — drop and run.</div>
-    </div>
-    <div className="stat reveal">
-      <div className="num">$<span data-count="50">50</span></div>
-      <div className="lbl">Starting cost for a full electrical diagnostic scan.</div>
-    </div>
-    <div className="stat reveal">
-      <div className="num">100<sup>%</sup></div>
-      <div className="lbl">Authorised Smart Start Interlock agent for NSW alcohol interlock program.</div>
-    </div>
-  </div>
-</section>
-
-
-<section className="section section-light" id="services">
-  <div className="wrap">
-    <div className="section-head">
-      <div>
-        <div className="section-tag">01 — Services</div>
-        <h2 className="section-title">Specialist work, <em>done properly</em>.</h2>
-      </div>
-      <a href="#contact" className="section-link">Get a quote →</a>
-    </div>
-
-    <div className="services-grid">
-      <a href="#" className="svc-card reveal">
-        <img className="svc-card-img" src="https://images.unsplash.com/photo-1632823469850-2f77dd9c7f93?w=1400&q=80" alt="Auto electrical diagnostics" />
-        <div className="svc-card-overlay"></div>
-        <span className="svc-card-price"><strong>From</strong> $50</span>
-        <span className="svc-card-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17l10-10M7 7h10v10"/></svg>
-        </span>
-        <div className="svc-card-content">
-          <div className="svc-card-num">SVC / 01</div>
-          <h3 className="svc-card-title">Auto Electrical Diagnostics</h3>
-          <p className="svc-card-desc">SRS, ABS and full electrical fault diagnosis using the latest G-Scan 2 equipment. We find faults faster — and quote before any work begins.</p>
-        </div>
-      </a>
-
-      <a href="#" className="svc-card reveal">
-        <img className="svc-card-img" src="https://images.unsplash.com/photo-1635775017492-1eb935a082a2?w=1200&q=80" alt="Smart Start Interlocks" />
-        <div className="svc-card-overlay"></div>
-        <span className="svc-card-price"><strong>From</strong> $500</span>
-        <span className="svc-card-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17l10-10M7 7h10v10"/></svg>
-        </span>
-        <div className="svc-card-content">
-          <div className="svc-card-num">SVC / 02</div>
-          <h3 className="svc-card-title">Smart Start Interlocks</h3>
-          <p className="svc-card-desc">Authorised NSW agent. Professional install in 1–2 hours, fully compliant with the alcohol interlock program.</p>
-        </div>
-      </a>
-
-      <a href="#" className="svc-card reveal">
-        <img className="svc-card-img" src="https://images.unsplash.com/photo-1486006920555-c77dcf18193c?w=1200&q=80" alt="Car air conditioning" />
-        <div className="svc-card-overlay"></div>
-        <span className="svc-card-price"><strong>Re-gas</strong> from $165</span>
-        <span className="svc-card-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17l10-10M7 7h10v10"/></svg>
-        </span>
-        <div className="svc-card-content">
-          <div className="svc-card-num">SVC / 03</div>
-          <h3 className="svc-card-title">Car Air Conditioning</h3>
-          <p className="svc-card-desc">Re-gas, leak detection and full system service. 45–60 minute turnaround for a standard re-gas.</p>
-        </div>
-      </a>
-
-      <a href="/services/auto-electrics" className="svc-card reveal">
-        <img className="svc-card-img" src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=1400&q=80" alt="Starter motors and alternators" />
-        <div className="svc-card-overlay"></div>
-        <span className="svc-card-price"><strong>New ·</strong> Recon · Repair</span>
-        <span className="svc-card-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17l10-10M7 7h10v10"/></svg>
-        </span>
-        <div className="svc-card-content">
-          <div className="svc-card-num">SVC / 04</div>
-          <h3 className="svc-card-title">Starter Motors &amp; Alternators</h3>
-          <p className="svc-card-desc">New, reconditioned, repaired and rebuilt — for cars, 4WDs, trucks and light commercial.</p>
-        </div>
-      </a>
-    </div>
-  </div>
-</section>
-
-
-<section className="section section-paper" id="diagnostics">
-  <div className="wrap">
-    <div className="feature-split">
-      <div className="feature-visual reveal">
-        <span className="feature-visual-badge">Latest Tech</span>
-        <img src="https://images.unsplash.com/photo-1597766353939-3b1ecdaaa9c7?w=1400&q=80" alt="G-Scan 2 diagnostic equipment" />
-      </div>
-      <div className="feature-content reveal">
-        <div className="section-tag">02 — Why Diagnostics Matter</div>
-        <h3>The fault stays hidden until the right tool finds it.</h3>
-        <p>Most general mechanics don't have specialised diagnostic equipment. We do — the G-Scan 2 reads SRS, ABS, engine, transmission and body control modules across nearly every make and model.</p>
-        <ul className="feature-list">
-          <li><strong>SRS &amp; ABS systems</strong> — full module-level fault diagnosis</li>
-          <li><strong>Check engine lights</strong> — exact fault codes, no guesswork</li>
-          <li><strong>Intermittent faults</strong> — the ones general mechanics miss</li>
-          <li><strong>All makes &amp; models</strong> — Japanese, European, American, 4WDs</li>
-        </ul>
-        <a href="#contact" className="btn btn-dark">
-          Book a Diagnostic
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<section className="section interlock" id="interlocks">
-  <div className="wrap">
-    <div className="interlock-grid">
-      <div className="reveal">
-        <div className="section-tag">03 — Smart Start Interlocks</div>
-        <h3>Authorised NSW agent for the <em>alcohol interlock</em> program.</h3>
-        <p>If you've been required to install an interlock device by NSW courts, we make the process simple. Professional installation, fully compliant, and we'll walk you through the whole thing on the phone before you book in.</p>
-        <p>1–2 hour install. No damage to your vehicle. Discreet design.</p>
-        <div className="interlock-cta">
-          <a href="tel:0296373605" className="btn btn-primary">
-            Call Now — (02) 9637 3605
-          </a>
-          <a href="#contact" className="btn btn-ghost">Send an enquiry</a>
-        </div>
-      </div>
-
-      <div className="interlock-checks reveal">
-        <div className="interlock-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-          <span>Professionally installed without damaging your vehicle</span>
-        </div>
-        <div className="interlock-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-          <span>Fully qualified specialist auto electricians</span>
-        </div>
-        <div className="interlock-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-          <span>User friendly, simple device to operate</span>
-        </div>
-        <div className="interlock-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-          <span>24-hour phone support, 7 days a week</span>
-        </div>
-        <div className="interlock-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-          <span>Cheapest monthly service on the market</span>
-        </div>
-        <div className="interlock-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-          <span>Discreet, low-profile device design</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<section className="section section-light" id="parts">
-  <div className="wrap">
-    <div className="section-head">
-      <div>
-        <div className="section-tag">04 — Parts &amp; Accessories</div>
-        <h2 className="section-title">Quality parts, fitted on-site.</h2>
-      </div>
-      <a href="#contact" className="section-link">Enquire →</a>
-    </div>
-
-    <div className="parts-grid">
-      <div className="part-card reveal">
-        <div className="part-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M8 7V3m8 4V3M6 12h2m4 0h2"/></svg>
-        </div>
-        <h4>Car Battery</h4>
-        <p>Premium replacement batteries with on-the-spot fitment. Full electrical health check included.</p>
-        <span className="part-card-link">View options</span>
-      </div>
-      <div className="part-card reveal">
-        <div className="part-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
-        </div>
-        <h4>Car Accessories</h4>
-        <p>Stereo, reversing cameras, sensors, dashcams, immobilisers — installed by qualified auto electricians.</p>
-        <span className="part-card-link">View options</span>
-      </div>
-      <div className="part-card reveal">
-        <div className="part-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/><path d="M2 17h2m4 0h8m4 0h2M5 11l2-5h10l2 5"/></svg>
-        </div>
-        <h4>4WD Equipment</h4>
-        <p>Driving lights, dual-battery setups, REDARC products, winches, isolators and bull-bar wiring.</p>
-        <span className="part-card-link">View options</span>
-      </div>
-      <div className="part-card reveal">
-        <div className="part-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/><circle cx="12" cy="12" r="4"/></svg>
-        </div>
-        <h4>Car Lighting</h4>
-        <p>Authorised Philips Lighting partner. LED upgrades, headlights, work lights and emergency lighting.</p>
-        <span className="part-card-link">View options</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<section className="partners">
-  <div className="wrap">
-    <div className="partners-head reveal">
-      <div className="section-tag">05 — Trusted Partners</div>
-      <h3>Officially partnered with the names that matter.</h3>
-    </div>
-  </div>
-  <div className="partners-marquee">
-    <div className="partners-track">
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/smartlock.jpg" alt="Smart Start Interlocks" /></a>
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/philip-lighting.jpg" alt="Philips Lighting" /></a>
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/redarc.jpg" alt="REDARC" /></a>
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/mta-logo.jpg" alt="Motor Traders Association NSW" /></a>
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/smartlock.jpg" alt="Smart Start Interlocks" /></a>
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/philip-lighting.jpg" alt="Philips Lighting" /></a>
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/redarc.jpg" alt="REDARC" /></a>
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/mta-logo.jpg" alt="Motor Traders Association NSW" /></a>
-      
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/smartlock.jpg" alt="Smart Start Interlocks" /></a>
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/philip-lighting.jpg" alt="Philips Lighting" /></a>
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/redarc.jpg" alt="REDARC" /></a>
-      <a href="#" className="partner-logo"><img src="https://www.mjautoelectrics.com.au/wp-content/uploads/2019/03/mta-logo.jpg" alt="Motor Traders Association NSW" /></a>
-    </div>
-  </div>
-</section>
-
-
-<section className="section why">
-  <div className="wrap">
-    <div className="section-head">
-      <div>
-        <div className="section-tag">06 — Why M&amp;J</div>
-        <h2 className="section-title">Three generations. <em>One reputation</em>.</h2>
-      </div>
-    </div>
-
-    <div className="why-row reveal">
-      <div>
-        <div className="why-num">01 / Heritage</div>
-        <h4>46 years and counting.</h4>
-        <p>M&amp;J Auto Electrics has been servicing customers from all over Sydney since 1980. We've watched cars go from carburettors to ECUs to electric drivetrains — and adapted with every step. The expertise compounds.</p>
-      </div>
-      <div className="why-visual">
-        <img src="https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1400&q=80" alt="Workshop heritage" />
-      </div>
-    </div>
-
-    <div className="why-row flip reveal">
-      <div>
-        <div className="why-num">02 / Specialism</div>
-        <h4>Auto electricians, not general mechanics.</h4>
-        <p>Auto electricians specialise in vehicle electrical systems — wiring, sensors, batteries, alternators, electronic modules. Most general mechanics don't diagnose this in depth. We focus exclusively on electrical work, so faults get found faster and fixed correctly the first time.</p>
-      </div>
-      <div className="why-visual">
-        <img src="https://images.unsplash.com/photo-1632823471565-1ecdf7a92aa6?w=1400&q=80" alt="Auto electrical specialist work" />
-      </div>
-    </div>
-
-    <div className="why-row reveal">
-      <div>
-        <div className="why-num">03 / Convenience</div>
-        <h4>Drop and run. Two minutes from the station.</h4>
-        <p>We're at 173 Pitt Street, Merrylands — two minutes' walk to the station, the shopping centre and main transport links. Drop your car off, get on with your day, pick it up when it's ready. No hassle, no wasted time.</p>
-      </div>
-      <div className="why-visual">
-        <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1400&q=80" alt="Convenient location Merrylands" />
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<section className="section faq" id="faq">
-  <div className="wrap">
-    <div className="faq-grid">
-      <div>
-        <div className="section-tag">07 — Common Questions</div>
-        <h2 className="section-title">Straight answers, no hidden fees.</h2>
-        <p className="section-lede">If your question isn't here, give us a call — we'll talk you through it on the phone, no obligation.</p>
-      </div>
-
-      <div className="faq-list">
-        <details className="faq-item" open>
-          <summary>How much does car electrical diagnostics cost? <span className="faq-icon"></span></summary>
-          <div className="faq-answer">Diagnostic and servicing work starts at $50 at M&amp;J Auto Electrics. The final cost depends on the fault found and the repair required — we'll quote you before any work begins.</div>
-        </details>
-        <details className="faq-item">
-          <summary>How much does a SmartStart Interlock installation cost? <span className="faq-icon"></span></summary>
-          <div className="faq-answer">SmartStart Interlock installation starts at $500 — we can walk you through what's involved when you call.</div>
-        </details>
-        <details className="faq-item">
-          <summary>How much does a car air conditioning re-gas cost? <span className="faq-icon"></span></summary>
-          <div className="faq-answer">Air conditioning re-gas starts at $165. The price can vary depending on your vehicle and how much refrigerant is needed.</div>
-        </details>
-        <details className="faq-item">
-          <summary>How long does a SmartStart Interlock installation take? <span className="faq-icon"></span></summary>
-          <div className="faq-answer">Installation typically takes 1–2 hours depending on the vehicle. Please book in advance to arrange the installation.</div>
-        </details>
-        <details className="faq-item">
-          <summary>How long does an air conditioning re-gas take? <span className="faq-icon"></span></summary>
-          <div className="faq-answer">A standard re-gas takes around 45–60 minutes. If there's a leak or a fault in the system, diagnosis and repair will add time.</div>
-        </details>
-        <details className="faq-item">
-          <summary>Do you service all areas of Sydney? <span className="faq-icon"></span></summary>
-          <div className="faq-answer">We're based in Merrylands, in Western Sydney, and we see customers from across the greater Sydney region.</div>
-        </details>
-        <details className="faq-item">
-          <summary>What makes an auto electrician different from a regular mechanic? <span className="faq-icon"></span></summary>
-          <div className="faq-answer">Auto electricians specialise in vehicle electrical systems — wiring, sensors, batteries, alternators, and electronic modules — which most general mechanics don't diagnose in depth. M&amp;J focuses exclusively on electrical work, so faults get found faster and fixed correctly the first time.</div>
-        </details>
-        <details className="faq-item">
-          <summary>What are the signs my car has an electrical fault? <span className="faq-icon"></span></summary>
-          <div className="faq-answer">Common signs include a warning light on your dash, a car that won't start or starts intermittently, flickering lights, or a battery that keeps going flat. If any of these happen, a diagnostic check starting at $50 will identify the cause.</div>
-        </details>
-        <details className="faq-item">
-          <summary>Why is my check engine light on? <span className="faq-icon"></span></summary>
-          <div className="faq-answer">A check engine light means your vehicle's computer has logged a fault code — it could be anything from a faulty sensor to an emissions issue. A diagnostic scan will read the exact code and tell you what needs fixing.</div>
-        </details>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<section className="section contact" id="contact">
-  <div className="wrap">
-    <div className="section-head">
-      <div>
-        <div className="section-tag">08 — Get In Touch</div>
-        <h2 className="section-title">
-          Drop the keys. <em>We&apos;ll handle it.</em>
-        </h2>
-        <p className="section-lede">
-          Call now to book in, or send us a message and we&apos;ll be back to you the same day.
-        </p>
-      </div>
-    </div>
-
-    <div className="contact-grid">
-      <div className="contact-info reveal">
-        <div className="contact-info-item">
-          <div className="lbl">Call</div>
-          <a href="tel:0296373605" className="val">(02) 9637 3605</a>
-        </div>
-        <div className="contact-info-item">
-          <div className="lbl">Email</div>
-          <a href="mailto:service@mjautoelectrics.com.au" className="val">service@mjautoelectrics.com.au</a>
-        </div>
-        <div className="contact-info-item">
-          <div className="lbl">Workshop</div>
-          <div className="val">173 Pitt Street, Merrylands<br />NSW 2160</div>
-        </div>
-        <div className="contact-info-item">
-          <div className="lbl">Hours</div>
-          <div className="val">Mon – Fri · 8:00 am – 4:30 pm</div>
-        </div>
-        <div
-          style={{
-            marginTop: '1rem',
-            aspectRatio: '4 / 2.5',
-            borderRadius: '4px',
-            overflow: 'hidden',
-            border: '1px solid var(--c-line-dark)',
-          }}
-        >
-          <iframe
-            title="Workshop location"
-            src="https://maps.google.com/maps?q=173+Pitt+Street+Merrylands+NSW+2160&t=&z=15&ie=UTF8&iwloc=&output=embed"
-            style={{
-              width: '100%',
-              height: '100%',
-              border: 0,
-              filter: 'invert(0.9) hue-rotate(180deg)',
-            }}
-            loading="lazy"
-          />
-        </div>
-      </div>
-
-      <form className="contact-form reveal" onSubmit={onContactSubmit}>
-        <h4>Send us a message</h4>
-        <div className="form-row two">
-          <div className="field">
-            <label>Your name</label>
-            <input type="text" required placeholder="Full name" />
-          </div>
-          <div className="field">
-            <label>Phone</label>
-            <input type="tel" required placeholder="04XX XXX XXX" />
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="field">
-            <label>Email</label>
-            <input type="email" required placeholder="you@example.com" />
-          </div>
-        </div>
-        <div className="form-row two">
-          <div className="field">
-            <label>Service</label>
-            <select>
-              <option>Auto electrical diagnostic</option>
-              <option>Smart Start Interlock</option>
-              <option>Air conditioning</option>
-              <option>Battery / Alternator / Starter</option>
-              <option>Parts &amp; accessories</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div className="field">
-            <label>Vehicle make / model</label>
-            <input type="text" placeholder="e.g. Toyota Hilux 2019" />
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="field">
-            <label>Message</label>
-            <textarea placeholder={"Tell us what's going on with your car..."} />
-          </div>
-        </div>
-        <button type="submit">
-          Send message →
-        </button>
-      </form>
-    </div>
-  </div>
-</section>
-    </>
-  )
-}
-
-
-function AutoElectricsPage() {
-  return (
-    <>
-      <section className="hero" style={{ minHeight: '58vh', padding: 'clamp(2.5rem, 6vw, 4rem) 0' }}>
-        <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
-          <div className="eyebrow">Service</div>
-          <h1 style={{ marginBottom: '1rem' }}>
-            <span className="line"><span>Auto Electrics</span></span>
-          </h1>
-          <p
-            className="hero-sub"
-            style={{ textTransform: 'uppercase', letterSpacing: '0.12em', fontSize: '0.85rem' }}
-          >
-            Starters &amp; alternator repair
-          </p>
-          <p className="hero-sub" style={{ maxWidth: '640px' }}>
-            The electrical systems of today&apos;s cars are complex. Your alternator, starter motor,
-            ignition and battery are crucial to performance — and safety.
-          </p>
-          <div className="hero-ctas">
-            <a href="tel:0296373605" className="btn btn-primary">
-              Call (02) 9637 3605
-            </a>
-            <a href="/#contact" className="btn btn-ghost">
-              Send an enquiry
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section className="section section-paper">
-        <div className="wrap">
-          <div className="feature-split">
-            <div className="feature-content reveal in">
-              <p style={{ color: 'var(--c-stone)', marginBottom: '1.25rem', maxWidth: '720px' }}>
-                The electrical systems of today&apos;s cars are complex and today&apos;s advanced
-                automotive technology places increased demands on automotive components. Your
-                alternator, starter motor, ignition and battery are all crucial to your
-                vehicle&apos;s performance and, more importantly, its safety.
-              </p>
-              <p style={{ color: 'var(--c-stone)', marginBottom: '1.25rem', maxWidth: '720px' }}>
-                More and more of today&apos;s vehicles are controlled by on-board computers — which
-                is why the electrical system in modern vehicles is more important than ever.
-              </p>
-              <p style={{ color: 'var(--c-stone)', marginBottom: '1.25rem', maxWidth: '720px' }}>
-                When an alternator or starter motor fails, chances are their components have outlived
-                the intended service life.
-              </p>
-              <p style={{ color: 'var(--c-stone)', marginBottom: '1.5rem', maxWidth: '720px' }}>
-                At M&amp;J&apos;s, we specialise in the supply, repair and refurbishment of starter
-                motors and alternators for all vehicle makes and models. We offer a full repair and
-                replace service so you are never kept waiting any longer than is absolutely necessary
-                — and in some cases where your product is no longer available, we are able to rebuild
-                one.
-              </p>
-            </div>
-          </div>
-
-          <div className="parts-grid" style={{ marginTop: '2rem' }}>
-            <div className="part-card reveal in">
-              <h4>Alternators</h4>
-              <p>
-                The alternator transforms mechanical energy into electrical energy. It sends power to
-                essential parts of your vehicle like the headlights, the engine fan, ignition coils
-                and various parts of the fuel injection system.
-              </p>
-            </div>
-            <div className="part-card reveal in">
-              <h4>Starter motors</h4>
-              <p>
-                The starter motor changes electrical energy into mechanical energy. It uses
-                electricity from the battery to start the crankshaft turning — that gets your car
-                going.
-              </p>
-            </div>
-            <div className="part-card reveal in">
-              <h4>Inspected by trained professionals</h4>
-              <p>
-                It&apos;s important to have your alternator or starter motor checked regularly —
-                failure isn&apos;t always obvious until it&apos;s too late. We inspect, test and
-                repair components across your car&apos;s electrical systems.
-              </p>
-            </div>
-          </div>
-
-          <blockquote
-            style={{
-              marginTop: '2.5rem',
-              padding: '1.25rem 1.5rem',
-              borderLeft: '3px solid var(--c-red)',
-              background: 'var(--c-cream)',
-              borderRadius: '4px',
-              fontWeight: 600,
-              color: 'var(--c-ink)',
-              maxWidth: '720px',
-            }}
-          >
-            Did you know, over 50% of all roadside vehicle breakdowns are electronically related
-            faults?
-          </blockquote>
-
-          <p style={{ marginTop: '2rem', color: 'var(--c-stone)', maxWidth: '720px' }}>
-            M&amp;J&apos;s has been established since 1980 servicing customers from all over Sydney.
-            We&apos;re dedicated to delivering the highest quality of service — we&apos;ve adapted
-            with every new model and upgrade to vehicle systems, with modern equipment to service your
-            car.
-          </p>
-
-          <div style={{ marginTop: '2rem' }}>
-            <a href="tel:0296373605" className="btn btn-dark">
-              Call now — (02) 9637 3605
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section className="ticker" aria-hidden="true">
-        <div className="ticker-track">
-          <span>Privacy Policy</span>
-          <span>Terms of Use</span>
-          <span><a href="/#contact" style={{ color: 'inherit' }}>Contact M &amp; J Electrics</a></span>
-          <span>Privacy Policy</span>
-          <span>Terms of Use</span>
-          <span><a href="/#contact" style={{ color: 'inherit' }}>Contact M &amp; J Electrics</a></span>
-        </div>
-      </section>
-    </>
-  )
-}
-
-
-function App() {
-  const onContactSubmit = (e) => {
-    e.preventDefault()
-    window.alert("Thanks — we'll be in touch shortly.")
-  }
-
-  return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<HomePage onContactSubmit={onContactSubmit} />} />
-        <Route path="services/auto-electrics" element={<AutoElectricsPage />} />
-      </Route>
-    </Routes>
-  )
-}
-
-export default App
