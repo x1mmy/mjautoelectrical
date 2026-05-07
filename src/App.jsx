@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
 const FAQ_ITEMS = [
@@ -87,10 +87,13 @@ function UtilityBar() {
 }
 
 function Header() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const closeMenu = () => setMenuOpen(false)
+
   return (
     <header className="site-header">
       <div className="wrap">
-        <a href="/" className="brand" aria-label="M&J Auto Electrics home">
+        <a href="/" className="brand" aria-label="M&J Auto Electrics home" onClick={closeMenu}>
           <span className="brand-mark">
             <span>M&amp;J</span>
           </span>
@@ -100,17 +103,33 @@ function Header() {
           </span>
         </a>
         <nav className="nav" aria-label="Primary">
-          <a href="#services">Services</a>
-          <a href="#interlocks">Smart Start</a>
-          <a href="#parts">Parts</a>
-          <a href="#faq">FAQ</a>
-          <a href="#contact">Contact</a>
+          <a href="#services" onClick={closeMenu}>Services</a>
+          <a href="#interlocks" onClick={closeMenu}>Smart Start</a>
+          <a href="#parts" onClick={closeMenu}>Parts</a>
+          <a href="#faq" onClick={closeMenu}>FAQ</a>
+          <a href="#contact" onClick={closeMenu}>Contact</a>
         </nav>
+        <button
+          type="button"
+          className={`nav-toggle${menuOpen ? ' open' : ''}`}
+          aria-label="Toggle navigation menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((s) => !s)}
+        >
+          <span />
+        </button>
         <a href="tel:0296373605" className="cta-call">
           <PhoneIcon />
           <span className="cta-text">Call 02 9637 3605</span>
         </a>
       </div>
+      <nav className={`nav-mobile${menuOpen ? ' open' : ''}`} aria-label="Mobile primary">
+        <a href="#services" onClick={closeMenu}>Services</a>
+        <a href="#interlocks" onClick={closeMenu}>Smart Start</a>
+        <a href="#parts" onClick={closeMenu}>Parts</a>
+        <a href="#faq" onClick={closeMenu}>FAQ</a>
+        <a href="#contact" onClick={closeMenu}>Contact</a>
+      </nav>
     </header>
   )
 }
@@ -893,47 +912,14 @@ function Faq() {
 }
 
 function MiniMap() {
-  const uid = useId()
-  const streetsId = `${uid}-streets`
-  const streets2Id = `${uid}-streets2`
   return (
-    <div className="mini-map" aria-hidden="true">
-      <svg viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <pattern id={streetsId} width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M0 20 H40 M20 0 V40" stroke="#1c1c1c" strokeWidth="1" />
-          </pattern>
-          <pattern id={streets2Id} width="80" height="80" patternUnits="userSpaceOnUse">
-            <path d="M-10 50 L90 50 M40 -10 L40 90" stroke="#252525" strokeWidth="2" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="#0d0d0d" />
-        <rect width="100%" height="100%" fill={`url(#${streetsId})`} />
-        <rect width="100%" height="100%" fill={`url(#${streets2Id})`} />
-        <path d="M0 110 Q100 100 200 115 T400 130" stroke="#3a3a3a" strokeWidth="3" fill="none" opacity=".7" />
-        <path d="M180 0 L210 220" stroke="#e8362f" strokeWidth="2" strokeDasharray="4 6" opacity=".4" />
-        <text x="14" y="28" fill="#3a3a3a" fontFamily="JetBrains Mono" fontSize="9" letterSpacing="2">
-          PARRAMATTA RD
-        </text>
-        <text x="14" y="200" fill="#3a3a3a" fontFamily="JetBrains Mono" fontSize="9" letterSpacing="2">
-          M4 MOTORWAY
-        </text>
-        <text x="225" y="80" fill="#3a3a3a" fontFamily="JetBrains Mono" fontSize="9" letterSpacing="2">
-          PITT ST
-        </text>
-      </svg>
-      <div className="map-pin">
-        <svg className="pin-svg" viewBox="0 0 24 30" fill="none">
-          <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 18 12 18s12-9 12-18c0-6.6-5.4-12-12-12z" fill="#e8362f" />
-          <circle cx="12" cy="12" r="4" fill="#fff" />
-        </svg>
-        <span className="pin-pulse" />
-      </div>
-      <div className="mini-map-cap">
-        <b>M&amp;J Auto Electrics</b>
-        <br />
-        173 Pitt St · Merrylands NSW
-      </div>
+    <div className="mini-map">
+      <iframe
+        title="M&J Auto Electrics location"
+        src="https://maps.google.com/maps?q=173+Pitt+Street+Merrylands+NSW+2160&t=&z=15&ie=UTF8&iwloc=&output=embed"
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
     </div>
   )
 }
